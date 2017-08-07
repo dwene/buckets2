@@ -4,35 +4,25 @@ const errorHandler = require('feathers-errors/handler');
 const path = require('path');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const config = require('config');
+const logger = require('./server/logger');
 // const http = require('http');
 // const service = require('feathers-mongoose');
 mongoose.Promise = global.Promise;
 
-// Connect to Mongoose if not in a test environment
-if (process.env.NODE_ENV !== 'test') {
-  if (process.env.NODE_ENV !== 'prod') {
-    const options = {
-      server: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
-      replset: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } }
-    };
-    mongoose.connect(
-      'mongodb://username:password@ds157320.mlab.com:57320/buckets_dev',
-      options
-    );
-  } else {
-    const options = {
-      server: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
-      replset: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } }
-    };
-    mongoose.connect(
-      'mongodb://username:password@ds141209.mlab.com:41209/buckets',
-      options
-    );
-  }
-}
-
 // Initiate our app
 const app = feathers();
+
+module.exports = app;
+
+// connect to the mongodb database
+const options = config.get('buckets.db.options');
+const bucketsDbUrl = config.get('buckets.db.url');
+logger.info(`connecting to mongodb at url ${bucketsDbUrl}`);
+mongoose.connect(
+  bucketsDbUrl,
+  options
+);
 
 // Get our realtime routes
 const realtime_routes = require('./server/routes/realtime');
@@ -62,9 +52,9 @@ app.get('*', (req, res) => {
 });
 
 // Get port from environment and store in Express.
-const port = process.env.PORT || '3000';
+const port = config.get('buckets.server.port');
 // app.set('port', port);
-console.info('port listening on: ', port);
+logger.info('express listening on port: ', port);
 
 // Listen on provided port, on all network interfaces.
 app.listen(port);
@@ -74,7 +64,5 @@ app.use(errorHandler());
 
 // Catch all unhandled promise rejections
 process.on('unhandledRejection', (reason, p) => {
-  console.log(`Possibly Unhandled Rejection: ${reason}, `, p);
+  logger.error(`Possibly Unhandled Rejection: ${reason}, `, p);
 });
-
-module.exports = app;

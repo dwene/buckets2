@@ -3,9 +3,12 @@
 # compiled output
 /tmp
 /out-tsc
+/frontend/dist
 
 # dependencies
 /node_modules
+/backend/node_modules
+/frontend/node_modules
 
 # IDEs and editors
 /.idea
@@ -15,7 +18,7 @@
 *.launch
 .settings/
 *.sublime-workspace
-
+*.iml
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json
